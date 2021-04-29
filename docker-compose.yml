@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+    rabbitmq:
+        image: rabbitmq:3.8.14-management-alpine
+        container_name: rabbitmq
+        volumes:
+            - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+            - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+            - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+        # ports:
+        #     - 5672:5672
+        #     - 15672:15672
+
+    postgres:
+        image: postgres:12.6-alpine
+        container_name: postgres
+        volumes:
+            - ./.docker/postgres:/var/lib/postgresql/data
+        environment: 
+            POSTGRES_DB: "lookit"
+            POSTGRES_HOST_AUTH_METHOD: "trust"
+        # ports:
+        #     - 5432:5432
+
+    celery:
+        build:
+            context: .
+            dockerfile: celery.Dockerfile
+        container_name: celery
+        volumes:
+            - .:/app
+        depends_on:
+                - "rabbitmq"
+        command: "/usr/local/bin/celery worker --app=project --loglevel=INFO -Q builds,email,cleanup"
+
