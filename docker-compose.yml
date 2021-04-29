@@ -29,7 +29,9 @@ services:
         container_name: celery
         volumes:
             - .:/app
+        links:
+            - rabbitmq
         depends_on:
-                - "rabbitmq"
-        command: "/usr/local/bin/celery worker --app=project --loglevel=INFO -Q builds,email,cleanup"
-
+            - rabbitmq
+        command: "celery worker --app=project --loglevel=INFO -Q builds,email,cleanup"
+        # command: "celery worker"
